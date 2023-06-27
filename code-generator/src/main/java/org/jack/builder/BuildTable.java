@@ -1,6 +1,9 @@
 package org.jack.builder;
 
+import org.jack.bean.Constants;
+import org.jack.bean.TableInfo;
 import org.jack.utils.PropertiesUtils;
+import org.jack.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,37 +32,49 @@ public class BuildTable {
 
     }
 
-    public static void getTableStatus() {
-
+    public static void buildTable() {
+        ResultSet tableResult = null;
         PreparedStatement ps = null;
-        ResultSet rs = null;
 
         try {
             ps = conn.prepareStatement(SHOW_TABLE_STATUS);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                String tableName = rs.getString("name");
-                String comment = rs.getString("comment");
-                logger.info("tableName:{} comment:{}", tableName, comment);
+            tableResult = ps.executeQuery();
+            while (tableResult.next()) {
+                String tableName = tableResult.getString("name");
+                String comment = tableResult.getString("comment");
+                TableInfo tableInfo = new TableInfo();
+                String beanName = tableName;
+                if (Constants.getIgnoreTablePrefix()) {
+                    beanName = tableName.substring(tableName.indexOf("_") + 1);
+                }
+                beanName = StringUtils.NametoCamelCase('_', beanName, true) +
+                        Constants.getBeanParamQuerySuffix();
+                tableInfo.setBeanName(beanName);
+                tableInfo.setComment(comment);
+                tableInfo.setTableName(tableName);
+                logger.info("tableName:{} comment:{} beanName:{}", tableName, comment, beanName);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logger.error("构建表错误", e);
         } finally {
             try {
-                if (rs != null) {
-                    rs.close();
-                }
+
                 if (ps != null) {
                     ps.close();
                 }
                 if (conn != null) {
                     conn.close();
                 }
+                if (tableResult != null) {
+                    tableResult.close();
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
 
-
     }
+
+
 }
+
