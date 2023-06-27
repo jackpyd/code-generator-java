@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jack.bean.Constants;
 import org.jack.bean.FieldInfo;
 import org.jack.bean.TableInfo;
+import org.jack.utils.JsonUtils;
 import org.jack.utils.PropertiesUtils;
 import org.jack.utils.StringUtils;
 import org.jack.utils.TypeMapUtils;
@@ -12,7 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BuildTable {
     private static Logger logger = LoggerFactory.getLogger(BuildTable.class);
@@ -64,8 +67,9 @@ public class BuildTable {
                 tableInfo.setComment(comment);
                 tableInfo.setTableName(tableName);
                 getFieldInfoList(tableInfo);
+                getIndexInfoList(tableInfo);
                 tableInfoList.add(tableInfo);
-                logger.info("tableName:{} comment:{} beanName:{}", tableName, comment, beanName);
+                logger.info("tableInfo:{}", JsonUtils.obj2Json(tableInfo));
             }
             return tableInfoList;
         } catch (Exception e) {
@@ -101,12 +105,12 @@ public class BuildTable {
             resultSet = ps.executeQuery();
             while (resultSet.next()) {
                 FieldInfo fieldInfo = new FieldInfo();
-                String field = resultSet.getString("Field");
+                String fieldName = resultSet.getString("Field");
                 String type = resultSet.getString("Type");
                 String extra = resultSet.getString("Extra");
                 String comment = resultSet.getString("Comment");
                 // 获取bean属性名
-                String beanPropertyName = StringUtils.NametoCamelCase('_', field, false);
+                String beanPropertyName = StringUtils.NametoCamelCase('_', fieldName, false);
                 // 去除type括号中的内容
                 type = StringUtils.removeBrackets(type);
                 fieldInfo.setSqlFieldType(type);
@@ -116,11 +120,8 @@ public class BuildTable {
                 // 获取是否自增长
                 fieldInfo.setAutoIncrement("auto_increment".equals(extra) ? true : false);
                 fieldInfo.setComment(comment);
-
-
+                fieldInfo.setFieldName(fieldName);
                 fieldInfoList.add(fieldInfo);
-
-                logger.info("type:{} field:{} extra:{} comment:{} beanPropertyName:{}", type, field, extra, comment, beanPropertyName);
 
                 // 判断是否含有时间类型
                 if (ArrayUtils.contains(Constants.SQL_DATE_TYPES, type)) {
@@ -134,6 +135,7 @@ public class BuildTable {
 
             }
             tableInfo.setFieldInfoList(fieldInfoList);
+//            logger.info("fieldInfoList:{}", fieldInfoList);
             return fieldInfoList;
         } catch (Exception e) {
             logger.error("读取表字段信息出错", e);
@@ -150,6 +152,51 @@ public class BuildTable {
         }
 
         return null;
+    }
+
+
+    //    读取表索引
+    public static void getIndexInfoList(TableInfo tableInfo) {
+        PreparedStatement ps = null;
+        ResultSet resultSet = null;
+
+        // 采用map建立字段名到字段对象的映射
+        Map<String, FieldInfo> fileName2FileInfoMap = new HashMap<>();
+        for (FieldInfo fieldInfo : tableInfo.getFieldInfoList()) {
+            fileName2FileInfoMap.put(fieldInfo.getFieldName(), fieldInfo);
+        }
+        try {
+            ps = conn.prepareStatement(String.format(SQL_SHOW_TABLE_INDEX, tableInfo.getTableName()));
+            resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                String keyName = resultSet.getString("Key_name");
+                Integer nonUnique = resultSet.getInt("Non_unique");
+                String columnName = resultSet.getString("Column_name");
+                if (nonUnique == 1) {
+                    continue;
+                }
+                List<FieldInfo> fieldInfoList = tableInfo.getKeyIndexFieldInfoMap().get(keyName);
+                if (fieldInfoList == null) {
+                    fieldInfoList = new ArrayList<>();
+                    tableInfo.getKeyIndexFieldInfoMap().put(keyName, fieldInfoList);
+                }
+                fieldInfoList.add(fileName2FileInfoMap.get(columnName));
+
+            }
+        } catch (Exception e) {
+            logger.error("读取表索引信息出错", e);
+        } finally {
+            try {
+
+                if (ps != null) ps.close();
+                if (resultSet != null) resultSet.close();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
     }
 
 }

@@ -57,13 +57,6 @@ public class TableInfo {
         this.fieldInfoList = fieldInfoList;
     }
 
-    public Map<String, List<FieldInfo>> getKeyFieldInfoMap() {
-        return keyFieldInfoMap;
-    }
-
-    public void setKeyFieldInfoMap(Map<String, List<FieldInfo>> keyFieldInfoMap) {
-        this.keyFieldInfoMap = keyFieldInfoMap;
-    }
 
     public boolean isHasDate() {
         return hasDate;
@@ -90,9 +83,18 @@ public class TableInfo {
     }
 
     //    唯一索引结合
-    private Map<String, List<FieldInfo>> keyFieldInfoMap = new LinkedHashMap<>();
+    private Map<String, List<FieldInfo>> keyIndexFieldInfoMap = new LinkedHashMap<>();
     //    是否有date类型
     private boolean hasDate;
+
+    public Map<String, List<FieldInfo>> getKeyIndexFieldInfoMap() {
+        return keyIndexFieldInfoMap;
+    }
+
+    public void setKeyIndexFieldInfoMap(Map<String, List<FieldInfo>> keyIndexFieldInfoMap) {
+        this.keyIndexFieldInfoMap = keyIndexFieldInfoMap;
+    }
+
     //    是否有时间(Time)类型
     private boolean hasTime;
     //    是否有bigdecimal类型
