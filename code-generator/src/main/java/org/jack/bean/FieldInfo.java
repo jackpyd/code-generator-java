@@ -12,6 +12,7 @@ public class FieldInfo {
     //    java字段类型
     private String javaFieldType;
 
+
     public String getFieldName() {
         return FieldName;
     }

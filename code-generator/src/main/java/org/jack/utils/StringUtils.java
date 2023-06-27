@@ -26,4 +26,12 @@ public class StringUtils {
         return sb.toString();
     }
 
+    // 去除括号
+    public static String removeBrackets(String str) {
+        if (str == null || str.length() == 0 || !str.contains("(")) {
+            return str;
+        }
+        return str.substring(0, str.indexOf("("));
+    }
+
 }
