@@ -9,7 +9,7 @@ public class TypeMapUtils {
     // 将mysql的类型映射为java的类型
     public static String mysqlType2JavaType(String type) {
         if (ArrayUtils.contains(Constants.SQL_DOUBLE_TYPES, type)) {
-            return "Double";
+            return "BigDecimal";
         } else if (ArrayUtils.contains(Constants.SQL_BOOLEAN_TYPES, type)) {
             return "Boolean";
         } else if (ArrayUtils.contains(Constants.SQL_INTEGER_TYPES, type)) {
