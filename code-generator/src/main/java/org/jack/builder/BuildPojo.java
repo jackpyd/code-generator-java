@@ -51,6 +51,10 @@ public class BuildPojo {
                 // 日期序列化和反序列化
                 bw.write(Constants.DB_DATE_FORMAT_IMPORT + "\n");
                 bw.write(Constants.DB_DATE_PARSE_IMPORT + "\n");
+
+                // 日期格式化工具类
+                bw.write("import " + PathInfo.PACKAGE_UTILS + ".DateUtils;\n");
+                bw.write("import " + PathInfo.PACKAGE_ENUMS + ".DateTimePatternEnum;\n");
             }
 
             // 导入需要忽略属性的包
@@ -111,6 +115,27 @@ public class BuildPojo {
                 bw.write("\t}");
                 bw.newLine();
             }
+            // 生成 toString 方法
+            StringBuffer toStringSB = new StringBuffer();
+            for (FieldInfo fieldInfo : tableInfo.getFieldInfoList()) {
+                String propertyName = fieldInfo.getBeanPropertyName();
+                String wrapperPropertyName = propertyName;
+                String sqlType = fieldInfo.getSqlFieldType();
+                if (ArrayUtils.contains(Constants.SQL_DATE_TYPES, sqlType)) {
+                    wrapperPropertyName = "DateUtils.format(" + propertyName + ", DateTimePatternEnum.YYYY_MM_DD.getPattern())";
+                } else if (ArrayUtils.contains(Constants.SQL_DATE_TIME_TYPES, sqlType)) {
+                    wrapperPropertyName = "DateUtils.format(" + propertyName + ", DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())";
+                }
+                toStringSB.append(fieldInfo.getComment() + ":\" + (" + propertyName + " == null ? \"空\" : " + wrapperPropertyName + ") + "
+                        + "\","
+                );
+            }
+            String toStringStr = toStringSB.toString();
+            toStringStr = toStringStr.substring(0, toStringStr.lastIndexOf("+"));
+            bw.write("    @Override\n");
+            bw.write("    public String toString() {\n");
+            bw.write("        return \"" + toStringStr + ";\n");
+            bw.write("    }");
 
 
             bw.write("}");
