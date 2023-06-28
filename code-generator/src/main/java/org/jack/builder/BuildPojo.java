@@ -53,6 +53,7 @@ public class BuildPojo {
                 bw.write(Constants.DB_DATE_PARSE_IMPORT + "\n");
 
                 // 日期格式化工具类
+                // todo:优化硬编码
                 bw.write("import " + PathInfo.PACKAGE_UTILS + ".DateUtils;\n");
                 bw.write("import " + PathInfo.PACKAGE_ENUMS + ".DateTimePatternEnum;\n");
             }

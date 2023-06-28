@@ -61,8 +61,8 @@ public class BuildTable {
                 if (Constants.getIgnoreTablePrefix()) {
                     beanName = tableName.substring(tableName.indexOf("_") + 1);
                 }
-                beanName = StringUtils.nameToCamelCase('_', beanName, true) +
-                        Constants.getBeanParamQuerySuffix();
+                beanName = StringUtils.nameToCamelCase('_', beanName, true);
+
                 tableInfo.setBeanName(beanName);
                 tableInfo.setComment(comment);
                 tableInfo.setTableName(tableName);

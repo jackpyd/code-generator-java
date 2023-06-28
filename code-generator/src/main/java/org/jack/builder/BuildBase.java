@@ -18,12 +18,14 @@ public class BuildBase {
     public static void execution() {
         // 生成DateUtils.class工具类
         headersPackageList.add("package " + PathInfo.PACKAGE_UTILS + ";");
+        // todo:优化硬编码
         build("DateUtils", PathInfo.PATH_PACKAGE_UTILS);
 
         headersPackageList.clear();
 
         // 生成DateTimePatternEnum.class工具类
         headersPackageList.add("package " + PathInfo.PACKAGE_ENUMS + ";");
+        // todo:优化硬编码
         build("DateTimePatternEnum", PathInfo.PATH_PACKAGE_ENUMS);
 
 
