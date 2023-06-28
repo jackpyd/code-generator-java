@@ -8,6 +8,7 @@ import org.jack.bean.PathInfo;
 import org.jack.bean.TableInfo;
 import org.jack.utils.DateTimeUtils;
 import org.jack.utils.FileUtils;
+import org.jack.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,20 +78,50 @@ public class BuildPojo {
                     bw.write("\t" + String.format(Constants.DB_DATE_PARSE_EXPRESSION, DateTimeUtils.DATE_FORMAT_YYYY_MM_DD)
                             + "\n");
                 }
+                if (ArrayUtils.contains(Constants.SQL_DATE_TIME_TYPES, fieldInfo.getSqlFieldType())) {
+                    bw.write("\t" + String.format(Constants.DB_DATE_FORMAT_EXPRESSION, DateTimeUtils.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS) + "\n");
+                    bw.write("\t" + String.format(Constants.DB_DATE_PARSE_EXPRESSION, DateTimeUtils.DATE_FORMAT_YYYY_MM_DD_HH_MM_SS) + "\n");
+                }
+                if (ArrayUtils.contains(Constants.DB_IGNORE_BEAN_FIELD, fieldInfo.getBeanPropertyName())) {
+                    bw.write("\t" + Constants.DB_IGNORE_BEAN_EXPRESSION + "\n"
+                    );
+                }
                 bw.write("    private " + fieldInfo.getJavaFieldType() + " " +
                         fieldInfo.getBeanPropertyName() + ";\n"
                 );
             }
+            // 生成get、set方法
+            // todo:需要特殊处理bool类型的get、set方法
+            for (FieldInfo fieldInfo : tableInfo.getFieldInfoList()) {
+                BuildComment.writerMethodComment(bw, "提供" + fieldInfo.getComment() + "的get方法");
+                bw.write("\tpublic " + fieldInfo.getJavaFieldType() + " get" + StringUtils.capitalizeName(fieldInfo.getBeanPropertyName()) + "(){");
+                bw.newLine();
+                bw.write("\t\treturn this." + fieldInfo.getBeanPropertyName() + ";");
+                bw.newLine();
+                bw.write("\t}");
+                bw.newLine();
+            }
+            for (FieldInfo fieldInfo : tableInfo.getFieldInfoList()) {
+                BuildComment.writerMethodComment(bw, "提供" + fieldInfo.getComment() + "的set方法");
+                bw.write("\tpublic void set" + StringUtils.capitalizeName(fieldInfo.getBeanPropertyName())
+                        + "( " + fieldInfo.getJavaFieldType() + " " + fieldInfo.getBeanPropertyName() + " ){");
+                bw.newLine();
+                bw.write("\t\tthis." + fieldInfo.getBeanPropertyName() + " = " + fieldInfo.getBeanPropertyName() + ";");
+                bw.newLine();
+                bw.write("\t}");
+                bw.newLine();
+            }
+
+
             bw.write("}");
             // 将缓冲区的数据立即写入到底层输出流中
             bw.flush();
 
 
         } catch (Exception e) {
-            logger.error("文件流出错", e);
+            logger.error("创建pojo时出错", e);
         } finally {
             // 先打开的后关闭
-
             try {
                 if (bw != null) {
                     bw.close();

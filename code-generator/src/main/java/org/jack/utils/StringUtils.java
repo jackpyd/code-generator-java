@@ -1,9 +1,19 @@
 package org.jack.utils;
 
-// 下划线转驼峰
-public class StringUtils {
 
-    public static String NametoCamelCase(char field, String name, boolean isUpperFirst) {
+public class StringUtils {
+    //    首字母大写
+    public static String capitalizeName(String name) {
+        if (name == null || name.length() == 0) {
+            return name;
+        }
+        char[] chars = name.toCharArray();
+        chars[0] = Character.toUpperCase(chars[0]);
+        return new String(chars);
+    }
+
+    // 下划线转驼峰
+    public static String nameToCamelCase(char field, String name, boolean isUpperFirst) {
         if (name == null || name.length() == 0) {
             return "";
         }

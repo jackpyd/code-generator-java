@@ -61,7 +61,7 @@ public class BuildTable {
                 if (Constants.getIgnoreTablePrefix()) {
                     beanName = tableName.substring(tableName.indexOf("_") + 1);
                 }
-                beanName = StringUtils.NametoCamelCase('_', beanName, true) +
+                beanName = StringUtils.nameToCamelCase('_', beanName, true) +
                         Constants.getBeanParamQuerySuffix();
                 tableInfo.setBeanName(beanName);
                 tableInfo.setComment(comment);
@@ -110,7 +110,7 @@ public class BuildTable {
                 String extra = resultSet.getString("Extra");
                 String comment = resultSet.getString("Comment");
                 // 获取bean属性名
-                String beanPropertyName = StringUtils.NametoCamelCase('_', fieldName, false);
+                String beanPropertyName = StringUtils.nameToCamelCase('_', fieldName, false);
                 // 去除type括号中的内容
                 type = StringUtils.removeBrackets(type);
                 fieldInfo.setSqlFieldType(type);
